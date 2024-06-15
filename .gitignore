@@ -167,5 +167,8 @@ __pycache__
 
 .gitignore
 traindata/*
-!/Users/hogan/Desktop/AICode/traindata/sampledata/
-!/Users/hogan/Desktop/AICode/traindata/truedata/
+!traindata/sampledata/
+traindata/sampledata/*
+!traindata/truedata/
+traindata/truedata/*
+.gitignore
