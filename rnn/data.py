@@ -7,6 +7,8 @@ import os
 
 import torch
 
+import rnn.env as env
+
 from tools.tool import load_array
 
 
@@ -86,8 +88,7 @@ class Vocab:
 
 
 class TokenEmbedding:
-    def __init__(self, sample=False) -> None:
-        self.sample = sample
+    def __init__(self) -> None:
         self.idx_to_token, self.idx_to_vec = self._load_embedding()
         self.unkown_idx = 0
         self.token_to_idx = {token:idx
@@ -96,11 +97,7 @@ class TokenEmbedding:
     def _load_embedding(self):
         idx_to_token = ['<unk>']
         idx_to_vec = []
-        emb_dir = ''
-        if self.sample:
-            emb_dir = '/Users/hogan/Desktop/AICode/traindata/sampledata/glove.6B.100d'
-        else:
-            emb_dir = '/Users/hogan/Desktop/AICode/traindata/truedata/glove.6B.100d'
+        emb_dir = env.data_dir_with('glove.6B.100d')
         with open(os.path.join(emb_dir,'vec.txt'), 'r') as f:
             for line in f:
                 elems = line.rstrip().split(' ')

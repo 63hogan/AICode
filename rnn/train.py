@@ -5,6 +5,7 @@ from rnn.BiRNN import BiRNN
 from rnn.data import TokenEmbedding
 import torch
 from torch import nn
+import rnn.env as env
 
 
 def init_weight(m):
@@ -36,13 +37,9 @@ def train_batch(net, features, labels, loss, trainer, devices):
     train_acc_sum = acc(pred, labels)
     return train_loss_sum, train_acc_sum
 
-def train_rnn(sample=True):
+def train_rnn():
     batch_size = 64
-    data_dir = ''
-    if sample:
-        data_dir = '/Users/hogan/Desktop/AICode/traindata/sampledata/aclImdb'
-    else:
-        data_dir = '/Users/hogan/Desktop/AICode/traindata/truedata/aclImdb'
+    data_dir = env.data_dir_with('aclImdb')
         
 
     train_iter, test_iter, vocab = load_data_imdb(data_dir, batch_size, 512)
