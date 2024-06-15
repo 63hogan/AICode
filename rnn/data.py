@@ -5,6 +5,10 @@
 import collections
 import os
 
+import torch
+
+from tools.tool import load_array
+
 
 # data_dir = '/Users/hogan/Desktop/AICode/traindata/aclImdb'
 
@@ -28,6 +32,10 @@ def read_imdb(datadir, is_train=True):
 def tokenize(lines):
     return [line.split() for line in lines]
 
+def truncate_pad(seq, seq_len, pad_token):
+    if len(seq) > seq_len:
+        seq = seq[:seq_len]
+    return seq + [pad_token] * (seq_len - len(seq))
 
 class Vocab:
 
@@ -76,6 +84,55 @@ class Vocab:
             tokens = [token for line in tokens for token in line]
         return collections.Counter(tokens)
 
+
+class TokenEmbedding:
+    def __init__(self, sample=False) -> None:
+        self.sample = sample
+        self.idx_to_token, self.idx_to_vec = self._load_embedding()
+        self.unkown_idx = 0
+        self.token_to_idx = {token:idx
+                             for idx, token in enumerate(self.idx_to_token)}
+    
+    def _load_embedding(self):
+        idx_to_token = ['<unk>']
+        idx_to_vec = []
+        emb_dir = ''
+        if self.sample:
+            emb_dir = '/Users/hogan/Desktop/AICode/traindata/sampledata/glove.6B.100d'
+        else:
+            emb_dir = '/Users/hogan/Desktop/AICode/traindata/truedata/glove.6B.100d'
+        with open(os.path.join(emb_dir,'vec.txt'), 'r') as f:
+            for line in f:
+                elems = line.rstrip().split(' ')
+                if len(elems) < 2 :
+                    continue
+                token, emb = elems[0], [float(ele) for ele  in elems[1:]]
+                idx_to_token.append(token)
+                idx_to_vec.append(emb)
+        idx_to_vec = [[0] * len(idx_to_vec[0])] + idx_to_vec
+        return idx_to_token, torch.tensor(idx_to_vec)
+    
+    def __getitem__(self, tokens):
+        indices = [self.token_to_idx.get(token, self.unkown_idx)
+                   for token in tokens]
+        return self.idx_to_vec[torch.tensor(indices)]
+    
+    def __len__(self):
+        return len(self.idx_to_token)
+
+def load_data_imdb(data_dir, batch_size, seq_len=512):
+    train_data = read_imdb(data_dir, True)
+    test_data = read_imdb(data_dir, False)
+    train_tokens_lines = tokenize(train_data[0])
+    test_tokens_lines = tokenize(test_data[0])
+    vocab = Vocab(train_tokens_lines, min_freq=5)
+    train_features = torch.tensor([truncate_pad(vocab[line], seq_len=seq_len, pad_token=vocab['<pad>'])
+                                   for line in train_tokens_lines])
+    test_features = torch.tensor([truncate_pad(vocab[line], seq_len=seq_len, pad_token=vocab['<pad>'])
+                                   for line in test_tokens_lines])
+    train_iter = load_array((train_features, torch.tensor(train_data[1])), batch_size)
+    test_iter = load_array((test_features, torch.tensor(train_data[1])), batch_size)
+    return train_iter, test_iter, vocab
 
 
 
