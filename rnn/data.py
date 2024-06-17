@@ -1,7 +1,3 @@
-
-
-
-
 import collections
 import os
 
@@ -88,16 +84,16 @@ class Vocab:
 
 
 class TokenEmbedding:
-    def __init__(self) -> None:
-        self.idx_to_token, self.idx_to_vec = self._load_embedding()
+    def __init__(self, emb_dir) -> None:
+        self.idx_to_token, self.idx_to_vec = self._load_embedding(emb_dir)
         self.unkown_idx = 0
         self.token_to_idx = {token:idx
                              for idx, token in enumerate(self.idx_to_token)}
     
-    def _load_embedding(self):
+    def _load_embedding(self, emb_dir):
+        print(f'start to read embedding files: {emb_dir}')
         idx_to_token = ['<unk>']
         idx_to_vec = []
-        emb_dir = env.data_dir_with('glove.6B.100d')
         with open(os.path.join(emb_dir,'vec.txt'), 'r') as f:
             for line in f:
                 elems = line.rstrip().split(' ')
@@ -118,6 +114,7 @@ class TokenEmbedding:
         return len(self.idx_to_token)
 
 def load_data_imdb(data_dir, batch_size, seq_len=512):
+    print('start to read imdb data files....')
     train_data = read_imdb(data_dir, True)
     test_data = read_imdb(data_dir, False)
     train_tokens_lines = tokenize(train_data[0])

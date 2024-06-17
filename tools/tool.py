@@ -53,3 +53,6 @@ def load_array(data_arrays, batch_size, is_train=True):
     Defined in :numref:`sec_linear_concise`"""
     dataset = data.TensorDataset(*data_arrays)
     return data.DataLoader(dataset, batch_size, shuffle=is_train)
+
+def dev():
+    torch.device("cuda" if torch.cuda.is_available() else "cpu")
